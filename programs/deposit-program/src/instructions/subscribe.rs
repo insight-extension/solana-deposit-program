@@ -6,7 +6,9 @@ use anchor_spl::{
 };
 
 use crate::{
-    error::ErrorCode, get_subscription_level, send_tokens, UserInfo, MASTER_WALLET, USER_INFO_SEED,
+    constants::{MASTER_WALLET, USER_INFO_SEED},
+    error::ErrorCode,
+    get_subscription_level, send_tokens, UserInfo,
 };
 
 #[derive(Accounts)]

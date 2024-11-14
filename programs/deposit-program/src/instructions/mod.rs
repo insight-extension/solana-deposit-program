@@ -9,3 +9,6 @@ pub use deposit_to_vault::*;
 
 pub mod subscribe_with_vault;
 pub use subscribe_with_vault::*;
+
+pub mod subscribe_by_time;
+pub use subscribe_by_time::*;

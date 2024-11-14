@@ -1,4 +1,4 @@
-use crate::{error::ErrorCode, SUBSCRIPTION_LEVELS};
+use crate::{constants::SUBSCRIPTION_LEVELS, error::ErrorCode};
 
 pub fn get_subscription_level(amount: u64) -> Result<(u64, u64), ErrorCode> {
     match SUBSCRIPTION_LEVELS

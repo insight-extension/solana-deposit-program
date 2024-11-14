@@ -4,7 +4,7 @@ use anchor_spl::{
     token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
 
-use crate::{error::ErrorCode, UserInfo, USER_INFO_SEED};
+use crate::{constants::USER_INFO_SEED, error::ErrorCode, UserInfo};
 
 #[derive(Accounts)]
 pub struct RefundBalance<'info> {

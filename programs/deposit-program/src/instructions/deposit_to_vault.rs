@@ -5,7 +5,7 @@ use anchor_spl::{
     token_interface::{Mint, TokenAccount, TokenInterface},
 };
 
-use crate::{send_tokens, UserInfo, USER_INFO_SEED};
+use crate::{constants::USER_INFO_SEED, send_tokens, UserInfo};
 
 #[derive(Accounts)]
 pub struct DepositToVault<'info> {

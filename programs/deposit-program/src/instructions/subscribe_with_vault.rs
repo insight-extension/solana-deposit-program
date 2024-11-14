@@ -5,7 +5,11 @@ use anchor_spl::{
     token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
 
-use crate::{error::ErrorCode, get_subscription_level, UserInfo, MASTER_WALLET, USER_INFO_SEED};
+use crate::{
+    constants::{MASTER_WALLET, USER_INFO_SEED},
+    error::ErrorCode,
+    get_subscription_level, UserInfo,
+};
 
 #[derive(Accounts)]
 pub struct SubscribeWithVault<'info> {
