@@ -6,8 +6,7 @@ use anchor_spl::{
 };
 
 use crate::{
-    error::ErrorCode, get_subscription_level, send_tokens, UserInfo, LOCAL_MASTER_WALLET,
-    USER_INFO_SEED,
+    error::ErrorCode, get_subscription_level, send_tokens, UserInfo, MASTER_WALLET, USER_INFO_SEED,
 };
 
 #[derive(Accounts)]
@@ -42,7 +41,7 @@ pub struct Subscribe<'info> {
     /// See Anchor example:
     /// https://github.com/solana-developers/anchor-examples/blob/main/account-constraints/address/programs/example/src/lib.rs
     #[account(
-        address = LOCAL_MASTER_WALLET
+        address = MASTER_WALLET
     )]
     pub master_wallet: SystemAccount<'info>,
     #[account(
@@ -58,6 +57,12 @@ pub struct Subscribe<'info> {
 }
 
 pub fn subscribe_handler(ctx: Context<Subscribe>, amount: u64) -> Result<()> {
+    #[cfg(any(feature = "devnet", feature = "mainnet"))]
+    {
+        if ctx.accounts.token.key() != USDC_MINT {
+            return Err(ErrorCode::InvalidToken.into());
+        }
+    }
     let (subscription_cost, duration) = get_subscription_level(amount)?;
     // Calculate the amount to send to the vault
     let vault_amount = amount - subscription_cost;

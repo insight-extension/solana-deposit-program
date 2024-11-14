@@ -5,9 +5,7 @@ use anchor_spl::{
     token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
 
-use crate::{
-    error::ErrorCode, get_subscription_level, UserInfo, LOCAL_MASTER_WALLET, USER_INFO_SEED,
-};
+use crate::{error::ErrorCode, get_subscription_level, UserInfo, MASTER_WALLET, USER_INFO_SEED};
 
 #[derive(Accounts)]
 pub struct SubscribeWithVault<'info> {
@@ -22,7 +20,7 @@ pub struct SubscribeWithVault<'info> {
     )]
     pub user_info: Account<'info, UserInfo>,
     #[account(
-        address = LOCAL_MASTER_WALLET
+        address = MASTER_WALLET
     )]
     pub master_wallet: SystemAccount<'info>,
     #[account(
@@ -45,6 +43,12 @@ pub struct SubscribeWithVault<'info> {
 }
 
 pub fn subscribe_with_vault_handler(ctx: Context<SubscribeWithVault>, amount: u64) -> Result<()> {
+    #[cfg(any(feature = "devnet", feature = "mainnet"))]
+    {
+        if ctx.accounts.token.key() != USDC_MINT {
+            return Err(ErrorCode::InvalidToken.into());
+        }
+    }
     let current_timestamp = Clock::get()?.unix_timestamp;
     if ctx.accounts.user_info.expiration > current_timestamp {
         return Err(ErrorCode::AlreadySubscribed.into());

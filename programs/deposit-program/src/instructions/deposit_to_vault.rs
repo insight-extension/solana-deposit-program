@@ -42,6 +42,12 @@ pub struct DepositToVault<'info> {
 }
 
 pub fn deposit_to_vault_handler(ctx: Context<DepositToVault>, amount: u64) -> Result<()> {
+    #[cfg(any(feature = "devnet", feature = "mainnet"))]
+    {
+        if ctx.accounts.token.key() != USDC_MINT {
+            return Err(ErrorCode::InvalidToken.into());
+        }
+    }
     send_tokens(
         ctx.accounts.user_token_account.to_account_info(),
         ctx.accounts.token.to_account_info(), 

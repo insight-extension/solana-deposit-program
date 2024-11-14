@@ -8,4 +8,6 @@ pub enum ErrorCode {
     UnauthorizedWithdrawal,
     #[msg("Already subscribed")]
     AlreadySubscribed,
+    #[msg("Invalid token")]
+    InvalidToken,
 }

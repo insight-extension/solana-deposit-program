@@ -38,6 +38,12 @@ pub struct RefundBalance<'info> {
 }
 
 pub fn refund_balance_handler(ctx: Context<RefundBalance>) -> Result<()> {
+    #[cfg(any(feature = "devnet", feature = "mainnet"))]
+    {
+        if ctx.accounts.token.key() != USDC_MINT {
+            return Err(ErrorCode::InvalidToken.into());
+        }
+    }
     let amount = ctx.accounts.user_info.available_balance;
     if amount == 0 {
         return Err(ErrorCode::InsufficientBalance.into());
