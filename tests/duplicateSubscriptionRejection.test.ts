@@ -11,6 +11,7 @@ test("duplicate subscription rejection", async () => {
   const {
     program,
     user,
+    master,
     usdcMint,
     connection,
     masterWalletUsdcAccount,
@@ -26,7 +27,7 @@ test("duplicate subscription rejection", async () => {
         token: usdcMint,
         tokenProgram: TOKEN_PROGRAM,
       })
-      .signers([user])
+      .signers([user, master])
       .rpc();
   } catch (error) {
     console.log(`Error: ${error}`);
@@ -50,7 +51,7 @@ test("duplicate subscription rejection", async () => {
         token: usdcMint,
         tokenProgram: TOKEN_PROGRAM,
       })
-      .signers([user])
+      .signers([user, master])
       .rpc();
   } catch (error) {
     txError = error;

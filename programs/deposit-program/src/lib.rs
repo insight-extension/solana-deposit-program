@@ -3,10 +3,7 @@ pub mod error;
 pub mod instructions;
 pub mod reusable;
 pub mod state;
-
 use anchor_lang::prelude::*;
-
-pub use constants::*;
 pub use instructions::*;
 pub use reusable::*;
 pub use state::*;
@@ -31,5 +28,9 @@ pub mod deposit_program {
 
     pub fn subscribe_with_vault(ctx: Context<SubscribeWithVault>, amount: u64) -> Result<()> {
         instructions::subscribe_with_vault::subscribe_with_vault_handler(ctx, amount)
+    }
+
+    pub fn subscribe_by_time(ctx: Context<PayPerTime>, amount: u64) -> Result<()> {
+        instructions::pay_per_time::pay_per_time_handler(ctx, amount)
     }
 }

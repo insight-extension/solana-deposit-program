@@ -5,12 +5,18 @@ use anchor_spl::{
     token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
 
-use crate::{error::ErrorCode, get_subscription_level, UserInfo, MASTER_WALLET, USER_INFO_SEED};
+use crate::{
+    constants::{MASTER_WALLET, USER_INFO_SEED},
+    error::ErrorCode,
+    get_subscription_level, UserInfo,
+};
 
 #[derive(Accounts)]
 pub struct SubscribeWithVault<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
+    #[account(mut, address = MASTER_WALLET)]
+    pub master: Signer<'info>,
     #[account(mint::token_program = token_program)]
     pub token: InterfaceAccount<'info, Mint>,
     #[account(
@@ -20,16 +26,12 @@ pub struct SubscribeWithVault<'info> {
     )]
     pub user_info: Account<'info, UserInfo>,
     #[account(
-        address = MASTER_WALLET
-    )]
-    pub master_wallet: SystemAccount<'info>,
-    #[account(
         mut,
         associated_token::mint = token,
-        associated_token::authority = master_wallet,
+        associated_token::authority = master,
         associated_token::token_program = token_program
     )]
-    pub master_wallet_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub master_token_account: InterfaceAccount<'info, TokenAccount>,
     #[account(
         mut,
         associated_token::mint = token,
@@ -77,7 +79,7 @@ fn send_to_master_wallet(ctx: &Context<SubscribeWithVault>, amount: u64) -> Resu
     let transfer_accounts = TransferChecked {
         from: ctx.accounts.vault.to_account_info(),
         mint: ctx.accounts.token.to_account_info(),
-        to: ctx.accounts.master_wallet_token_account.to_account_info(),
+        to: ctx.accounts.master_token_account.to_account_info(),
         authority: ctx.accounts.user_info.to_account_info(),
     };
     let cpi_context = CpiContext::new_with_signer(

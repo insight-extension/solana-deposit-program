@@ -14,6 +14,7 @@ test("subscription with vault", async () => {
   const {
     program,
     user,
+    master,
     usdcMint,
     connection,
     masterWalletUsdcAccount,
@@ -46,7 +47,7 @@ test("subscription with vault", async () => {
         token: usdcMint,
         tokenProgram: TOKEN_PROGRAM,
       })
-      .signers([user])
+      .signers([user, master])
       .rpc();
   } catch (error) {
     console.log(`Error: ${error}`);

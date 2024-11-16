@@ -4,12 +4,18 @@ use anchor_spl::{
     token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
 
-use crate::{error::ErrorCode, UserInfo, USER_INFO_SEED};
+use crate::{
+    constants::{MASTER_WALLET, USER_INFO_SEED},
+    error::ErrorCode,
+    UserInfo,
+};
 
 #[derive(Accounts)]
 pub struct RefundBalance<'info> {
     #[account(mut)]
     pub user: Signer<'info>, // User must sign the transaction
+    #[account(mut, address = MASTER_WALLET)]
+    pub master: Signer<'info>,
     #[account(mint::token_program = token_program)]
     pub token: InterfaceAccount<'info, Mint>,
     #[account(
