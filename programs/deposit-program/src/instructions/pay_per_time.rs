@@ -11,9 +11,11 @@ use crate::{
 };
 
 #[derive(Accounts)]
-pub struct SubscribeByTime<'info> {
+pub struct PayPerTime<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
+    #[account(mut, address = MASTER_WALLET)]
+    pub master: Signer<'info>,
     #[account(mint::token_program = token_program)]
     pub token: InterfaceAccount<'info, Mint>,
     #[account(
@@ -46,6 +48,6 @@ pub struct SubscribeByTime<'info> {
 }
 
 //TODO: implement this
-pub fn subscribe_by_time_handler(_ctx: Context<SubscribeByTime>, _amount: u64) -> Result<()> {
+pub fn pay_per_time_handler(_ctx: Context<PayPerTime>, _amount: u64) -> Result<()> {
     Ok(())
 }
