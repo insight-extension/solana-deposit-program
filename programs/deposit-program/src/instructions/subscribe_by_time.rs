@@ -45,6 +45,7 @@ pub struct SubscribeByTime<'info> {
     pub system_program: Program<'info, System>,
 }
 
+//TODO: implement this
 pub fn subscribe_by_time_handler(_ctx: Context<SubscribeByTime>, _amount: u64) -> Result<()> {
     Ok(())
 }

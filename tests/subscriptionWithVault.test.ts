@@ -1,6 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
+import { airdropIfRequired } from "@solana-developers/helpers";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
-import { PublicKey } from "@solana/web3.js";
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { getTokenBalance } from "./utils/helpers";
 import { initSetup } from "./utils/setup";
 
