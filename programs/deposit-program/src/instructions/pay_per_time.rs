@@ -2,11 +2,12 @@ use anchor_lang::prelude::*;
 
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token_interface::{Mint, TokenAccount, TokenInterface},
+    token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
 
 use crate::{
     constants::{MASTER_WALLET, USER_INFO_SEED},
+    error::ErrorCode,
     UserInfo,
 };
 
@@ -43,7 +44,52 @@ pub struct PayPerTime<'info> {
     pub system_program: Program<'info, System>,
 }
 
-//TODO: implement this
-pub fn pay_per_time_handler(_ctx: Context<PayPerTime>, _amount: u64) -> Result<()> {
+pub fn pay_per_time_handler(ctx: Context<PayPerTime>, amount: u64) -> Result<()> {
+    #[cfg(any(feature = "devnet", feature = "mainnet"))]
+    {
+        if ctx.accounts.token.key() != USDC_MINT {
+            return Err(ErrorCode::InvalidToken.into());
+        }
+    }
+    let current_timestamp = Clock::get()?.unix_timestamp;
+    if ctx.accounts.user_info.expiration > current_timestamp {
+        return Err(ErrorCode::AlreadySubscribed.into());
+    } else if ctx.accounts.user_info.available_balance < amount {
+        return Err(ErrorCode::InsufficientBalance.into());
+    } else {
+        send_to_master_wallet(&ctx, amount)?;
+        update_user_info(ctx, amount)?;
+        msg!(
+            "Payment of {} tokens has been sent to the master wallet.",
+            amount
+        );
+    }
+    Ok(())
+}
+
+fn send_to_master_wallet(ctx: &Context<PayPerTime>, amount: u64) -> Result<()> {
+    let seeds = &[
+        USER_INFO_SEED,
+        ctx.accounts.user.key.as_ref(),
+        &[ctx.accounts.user_info.bump],
+    ];
+    let signer_seeds = &[&seeds[..]];
+    let transfer_accounts = TransferChecked {
+        from: ctx.accounts.vault.to_account_info(),
+        mint: ctx.accounts.token.to_account_info(),
+        to: ctx.accounts.master_token_account.to_account_info(),
+        authority: ctx.accounts.user_info.to_account_info(),
+    };
+    let cpi_context = CpiContext::new_with_signer(
+        ctx.accounts.token_program.to_account_info(),
+        transfer_accounts,
+        signer_seeds,
+    );
+    transfer_checked(cpi_context, amount, ctx.accounts.token.decimals)?;
+    Ok(())
+}
+
+fn update_user_info(ctx: Context<PayPerTime>, amount: u64) -> Result<()> {
+    ctx.accounts.user_info.available_balance -= amount;
     Ok(())
 }

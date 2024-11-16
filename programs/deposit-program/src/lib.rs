@@ -30,7 +30,7 @@ pub mod deposit_program {
         instructions::subscribe_with_vault::subscribe_with_vault_handler(ctx, amount)
     }
 
-    pub fn subscribe_by_time(ctx: Context<PayPerTime>, amount: u64) -> Result<()> {
+    pub fn pay_per_time(ctx: Context<PayPerTime>, amount: u64) -> Result<()> {
         instructions::pay_per_time::pay_per_time_handler(ctx, amount)
     }
 }
