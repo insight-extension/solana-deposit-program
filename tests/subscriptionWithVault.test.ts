@@ -1,7 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
-import { airdropIfRequired } from "@solana-developers/helpers";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import { getTokenBalance } from "./utils/helpers";
 import { initSetup } from "./utils/setup";
 
@@ -15,6 +14,7 @@ test("subscription with vault", async () => {
   const {
     program,
     user,
+    master,
     usdcMint,
     connection,
     masterWalletUsdcAccount,
@@ -47,7 +47,7 @@ test("subscription with vault", async () => {
         token: usdcMint,
         tokenProgram: TOKEN_PROGRAM,
       })
-      .signers([user])
+      .signers([user, master])
       .rpc();
   } catch (error) {
     console.log(`Error: ${error}`);

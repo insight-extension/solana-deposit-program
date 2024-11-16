@@ -25,16 +25,12 @@ pub struct PayPerTime<'info> {
     )]
     pub user_info: Account<'info, UserInfo>,
     #[account(
-        address = MASTER_WALLET
-    )]
-    pub master_wallet: SystemAccount<'info>,
-    #[account(
         mut,
         associated_token::mint = token,
-        associated_token::authority = master_wallet,
+        associated_token::authority = master,
         associated_token::token_program = token_program
     )]
-    pub master_wallet_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub master_token_account: InterfaceAccount<'info, TokenAccount>,
     #[account(
         mut,
         associated_token::mint = token,

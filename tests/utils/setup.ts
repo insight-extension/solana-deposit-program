@@ -25,6 +25,13 @@ export const initSetup = async () => {
     Uint8Array.from(JSON.parse(process.env["PRIVATE_KEY"] ?? ""))
   );
 
+  //await airdropIfRequired(
+  //  connection,
+  //  master.publicKey,
+  //  5 * LAMPORTS_PER_SOL,
+  //  5 * LAMPORTS_PER_SOL
+  //);
+
   const user = Keypair.generate();
 
   // Airdrop SOL to user and master wallet

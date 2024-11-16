@@ -11,6 +11,7 @@ test("insufficient balance", async () => {
   const {
     program,
     user,
+    master,
     usdcMint,
     userUsdcAccount,
     connection,
@@ -26,7 +27,7 @@ test("insufficient balance", async () => {
         token: usdcMint,
         tokenProgram: TOKEN_PROGRAM,
       })
-      .signers([user])
+      .signers([user, master])
       .rpc();
   } catch (error) {
     txError = error;

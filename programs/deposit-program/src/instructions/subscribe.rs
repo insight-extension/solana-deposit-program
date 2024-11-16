@@ -15,6 +15,8 @@ use crate::{
 pub struct Subscribe<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
+    #[account(mut, address = MASTER_WALLET)]
+    pub master: Signer<'info>,
     #[account(mint::token_program = token_program)]
     pub token: InterfaceAccount<'info, Mint>,
     #[account(
@@ -42,17 +44,17 @@ pub struct Subscribe<'info> {
     pub vault: InterfaceAccount<'info, TokenAccount>,
     /// See Anchor example:
     /// https://github.com/solana-developers/anchor-examples/blob/main/account-constraints/address/programs/example/src/lib.rs
-    #[account(
-        address = MASTER_WALLET
-    )]
-    pub master_wallet: SystemAccount<'info>,
+    //#[account(
+    //    address = MASTER_WALLET
+    //)]
+    //pub master_wallet: SystemAccount<'info>,
     #[account(
         mut,
         associated_token::mint = token,
-        associated_token::authority = master_wallet,
+        associated_token::authority = master,
         associated_token::token_program = token_program
     )]
-    pub master_wallet_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub master_token_account: InterfaceAccount<'info, TokenAccount>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
@@ -99,7 +101,7 @@ fn send_to_master_wallet(ctx: &Context<Subscribe>, amount: u64) -> Result<()> {
     send_tokens(
         ctx.accounts.user_token_account.to_account_info(),
         ctx.accounts.token.to_account_info(),
-        ctx.accounts.master_wallet_token_account.to_account_info(),
+        ctx.accounts.master_token_account.to_account_info(),
         ctx.accounts.user.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.token.decimals,
