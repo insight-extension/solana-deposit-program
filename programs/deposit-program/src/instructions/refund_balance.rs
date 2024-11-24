@@ -7,7 +7,7 @@ use anchor_spl::{
 use crate::{
     constants::{MASTER_WALLET, USER_INFO_SEED},
     error::ErrorCode,
-    UserInfo,
+    UserSubscriptionInfo,
 };
 
 #[derive(Accounts)]
@@ -23,7 +23,7 @@ pub struct RefundBalance<'info> {
         seeds = [USER_INFO_SEED, user.key().as_ref()],
         bump = user_info.bump
     )]
-    pub user_info: Account<'info, UserInfo>,
+    pub user_info: Account<'info, UserSubscriptionInfo>,
     #[account(
         mut,
         associated_token::mint = token,

@@ -41,7 +41,7 @@ test("subscription", async () => {
 
   // Find addresses for userInfo and vault accounts
   const [userInfoAddress] = PublicKey.findProgramAddressSync(
-    [Buffer.from("user_info"), user.publicKey.toBuffer()],
+    [Buffer.from("user_subscription_info"), user.publicKey.toBuffer()],
     program.programId
   );
 

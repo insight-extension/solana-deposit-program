@@ -10,4 +10,6 @@ pub enum ErrorCode {
     AlreadySubscribed,
     #[msg("Invalid token")]
     InvalidToken,
+    #[msg("Invalid deposit type")]
+    InvalidDepositType,
 }

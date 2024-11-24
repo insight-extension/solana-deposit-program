@@ -8,7 +8,7 @@ use anchor_spl::{
 use crate::{
     constants::{MASTER_WALLET, USER_INFO_SEED},
     error::ErrorCode,
-    get_subscription_level, UserInfo,
+    get_subscription_level, UserSubscriptionInfo,
 };
 
 #[derive(Accounts)]
@@ -24,7 +24,7 @@ pub struct SubscribeWithVault<'info> {
         seeds = [USER_INFO_SEED, user.key().as_ref()],
         bump = user_info.bump
     )]
-    pub user_info: Account<'info, UserInfo>,
+    pub user_info: Account<'info, UserSubscriptionInfo>,
     #[account(
         mut,
         associated_token::mint = token,

@@ -10,13 +10,13 @@ beforeAll(async () => {
   setup = await initSetup();
 });
 
-test("deposit to vault", async () => {
+test("deposit to subscription vault", async () => {
   const { program, user, connection, usdcMint, TOKEN_PROGRAM } = setup;
 
   let tx: string | null = null;
   try {
     tx = await program.methods
-      .depositToVault(new anchor.BN(3_000_000))
+      .depositToVault({ subscription: {} }, new anchor.BN(3_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,
@@ -31,7 +31,7 @@ test("deposit to vault", async () => {
   expect(tx).not.toBeNull();
 
   const [userInfoAddress] = PublicKey.findProgramAddressSync(
-    [Buffer.from("user_info"), user.publicKey.toBuffer()],
+    [Buffer.from("user_subscription_info"), user.publicKey.toBuffer()],
     program.programId
   );
   const vault = await getAssociatedTokenAddress(
@@ -41,7 +41,9 @@ test("deposit to vault", async () => {
     TOKEN_PROGRAM
   );
 
-  const userInfo = await program.account.userInfo.fetch(userInfoAddress);
+  const userInfo = await program.account.userSubscriptionInfo.fetch(
+    userInfoAddress
+  );
   expect(userInfo.availableBalance.toNumber()).toEqual(3_000_000);
   expect(await getTokenBalance(connection, vault)).toEqual(
     new anchor.BN(3_000_000)
