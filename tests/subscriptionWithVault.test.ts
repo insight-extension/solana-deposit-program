@@ -24,7 +24,7 @@ test("subscription with vault", async () => {
   let tx: string | null = null;
   try {
     tx = await program.methods
-      .depositToVault(new anchor.BN(6_000_000))
+      .depositToVault({ subscription: {} }, new anchor.BN(6_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,
@@ -56,7 +56,7 @@ test("subscription with vault", async () => {
   expect(tx2).not.toBeNull();
 
   const [userInfoAddress] = PublicKey.findProgramAddressSync(
-    [Buffer.from("user_info"), user.publicKey.toBuffer()],
+    [Buffer.from("user_subscription_info"), user.publicKey.toBuffer()],
     program.programId
   );
 
@@ -67,7 +67,9 @@ test("subscription with vault", async () => {
     TOKEN_PROGRAM
   );
 
-  const userInfo = await program.account.userInfo.fetch(userInfoAddress);
+  const userInfo = await program.account.userSubscriptionInfo.fetch(
+    userInfoAddress
+  );
   expect(userInfo.availableBalance.toNumber()).toEqual(1_000_000);
   // Check vault balance and masterWallet balance
   const vaultBalance = await connection.getTokenAccountBalance(vaultAddress);

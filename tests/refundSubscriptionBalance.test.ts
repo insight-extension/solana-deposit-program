@@ -10,21 +10,57 @@ beforeAll(async () => {
   setup = await initSetup();
 });
 
-test("subscription", async () => {
+test("refund balance from subscription vault", async () => {
   const {
     program,
     user,
     master,
-    usdcMint,
     connection,
-    masterWalletUsdcAccount,
+    usdcMint,
+    userUsdcAccount,
     TOKEN_PROGRAM,
   } = setup;
 
   let tx: string | null = null;
   try {
     tx = await program.methods
-      .subscribe(new anchor.BN(6_000_000))
+      .depositToVault({ subscription: {} }, new anchor.BN(3_000_000))
+      .accounts({
+        user: user.publicKey,
+        token: usdcMint,
+        tokenProgram: TOKEN_PROGRAM,
+      })
+      .signers([user])
+      .rpc();
+  } catch (error) {
+    console.log(`Error: ${error}`);
+  }
+
+  expect(tx).not.toBeNull();
+
+  const [userInfoAddress] = PublicKey.findProgramAddressSync(
+    [Buffer.from("user_subscription_info"), user.publicKey.toBuffer()],
+    program.programId
+  );
+  const vault = await getAssociatedTokenAddress(
+    usdcMint,
+    userInfoAddress,
+    true,
+    TOKEN_PROGRAM
+  );
+
+  const userInfo = await program.account.userSubscriptionInfo.fetch(
+    userInfoAddress
+  );
+  expect(userInfo.availableBalance.toNumber()).toEqual(3_000_000);
+  expect(await getTokenBalance(connection, vault)).toEqual(
+    new anchor.BN(3_000_000)
+  );
+
+  let tx2: string | null = null;
+  try {
+    tx2 = await program.methods
+      .refundSubscriptionBalance()
       .accounts({
         user: user.publicKey,
         token: usdcMint,
@@ -36,33 +72,13 @@ test("subscription", async () => {
     console.log(`Error: ${error}`);
   }
 
-  expect(tx).not.toBeNull();
+  expect(tx2).not.toBeNull();
 
-  // Find addresses for userInfo and vault accounts
-  const [userInfoAddress] = PublicKey.findProgramAddressSync(
-    [Buffer.from("user_subscription_info"), user.publicKey.toBuffer()],
-    program.programId
-  );
-
-  const vaultAddress = await getAssociatedTokenAddress(
-    usdcMint,
-    userInfoAddress,
-    true,
-    TOKEN_PROGRAM
-  );
-
-  const userInfo = await program.account.userSubscriptionInfo.fetch(
+  const userInfo2 = await program.account.userSubscriptionInfo.fetch(
     userInfoAddress
   );
-  expect(userInfo.availableBalance.toNumber()).toEqual(1_000_000);
-  // Check vault balance and masterWallet balance
-  const vaultBalance = await connection.getTokenAccountBalance(vaultAddress);
-  expect(new anchor.BN(vaultBalance.value.amount)).toEqual(
-    new anchor.BN(1_000_000)
+  expect(userInfo2.availableBalance.toNumber()).toEqual(0);
+  expect(await getTokenBalance(connection, userUsdcAccount)).toEqual(
+    new anchor.BN(20_000_000)
   );
-  expect(await getTokenBalance(connection, masterWalletUsdcAccount)).toEqual(
-    new anchor.BN(5_000_000)
-  );
-  const currentTimestamp = new Date().getTime() / 1000;
-  expect(userInfo.expiration.toNumber()).toBeGreaterThan(currentTimestamp);
 });

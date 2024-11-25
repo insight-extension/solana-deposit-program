@@ -6,9 +6,9 @@ use anchor_spl::{
 };
 
 use crate::{
-    constants::{MASTER_WALLET, USER_INFO_SEED},
+    constants::{MASTER_WALLET, USER_SUBSCRIPTION_INFO_SEED},
     error::ErrorCode,
-    get_subscription_level, send_tokens, UserInfo,
+    get_subscription_level, send_tokens, UserSubscriptionInfo,
 };
 
 #[derive(Accounts)]
@@ -29,25 +29,19 @@ pub struct Subscribe<'info> {
     #[account(
         init_if_needed,
         payer = user,
-        space = 8 + UserInfo::INIT_SPACE,
-        seeds = [USER_INFO_SEED, user.key().as_ref()],
+        space = 8 + UserSubscriptionInfo::INIT_SPACE,
+        seeds = [USER_SUBSCRIPTION_INFO_SEED, user.key().as_ref()],
         bump
     )]
-    pub user_info: Account<'info, UserInfo>,
+    pub user_subscription_info: Account<'info, UserSubscriptionInfo>,
     #[account(
         init_if_needed,
         payer = user,
         associated_token::mint = token,
-        associated_token::authority = user_info,
+        associated_token::authority = user_subscription_info,
         associated_token::token_program = token_program,
     )]
-    pub vault: InterfaceAccount<'info, TokenAccount>,
-    /// See Anchor example:
-    /// https://github.com/solana-developers/anchor-examples/blob/main/account-constraints/address/programs/example/src/lib.rs
-    //#[account(
-    //    address = MASTER_WALLET
-    //)]
-    //pub master_wallet: SystemAccount<'info>,
+    pub subscription_vault: InterfaceAccount<'info, TokenAccount>,
     #[account(
         mut,
         associated_token::mint = token,
@@ -72,13 +66,9 @@ pub fn subscribe_handler(ctx: Context<Subscribe>, amount: u64) -> Result<()> {
     let vault_amount = amount - subscription_cost;
     let current_timestamp = Clock::get()?.unix_timestamp;
     // Check if the user already has an active subscription
-    if ctx.accounts.user_info.expiration > current_timestamp {
+    if ctx.accounts.user_subscription_info.expiration > current_timestamp {
         msg!("User already has an active subscription.");
         return Err(ErrorCode::AlreadySubscribed.into());
-        //msg!("Active subscription found. Updating user's available balance.");
-        //send_to_vault(&ctx, amount)?; // Transfer entire amount to vault
-        //update_user_info(ctx, amount)?;
-        //return Err(Error::from(SubscribeErrorCode::AlreadySubscribed));
     } else {
         msg!("No active subscription found. Proceeding with new subscription.");
         send_to_master_wallet(&ctx, subscription_cost)?; // Send subscription cost to master wallet
@@ -90,12 +80,6 @@ pub fn subscribe_handler(ctx: Context<Subscribe>, amount: u64) -> Result<()> {
     msg!("Subscription processed successfully.");
     Ok(())
 }
-
-//fn update_user_info(ctx: Context<Subscribe>, additional_balance: u64) -> Result<()> {
-//    ctx.accounts.user_info.available_balance += additional_balance;
-//    msg!("Subscription is active. Funds have been added to the vault, and your available balance has been updated.");
-//    Ok(())
-//}
 
 fn send_to_master_wallet(ctx: &Context<Subscribe>, amount: u64) -> Result<()> {
     send_tokens(
@@ -115,7 +99,7 @@ fn send_to_vault(ctx: &Context<Subscribe>, amount: u64) -> Result<()> {
     send_tokens(
         ctx.accounts.user_token_account.to_account_info(),
         ctx.accounts.token.to_account_info(),
-        ctx.accounts.vault.to_account_info(),
+        ctx.accounts.subscription_vault.to_account_info(),
         ctx.accounts.user.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.token.decimals,
@@ -127,11 +111,13 @@ fn send_to_vault(ctx: &Context<Subscribe>, amount: u64) -> Result<()> {
 fn save_user_info(ctx: Context<Subscribe>, available_balance: u64, duration: u64) -> Result<()> {
     let current_timestamp = Clock::get()?.unix_timestamp;
     let expiration = current_timestamp + duration as i64;
-    let bump = ctx.bumps.user_info;
-    ctx.accounts.user_info.set_inner(UserInfo {
-        available_balance,
-        expiration,
-        bump,
-    });
+    let bump = ctx.bumps.user_subscription_info;
+    ctx.accounts
+        .user_subscription_info
+        .set_inner(UserSubscriptionInfo {
+            available_balance,
+            expiration,
+            bump,
+        });
     Ok(())
 }

@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import { getTokenBalance } from "./utils/helpers";
 import { initSetup } from "./utils/setup";
 
@@ -10,7 +10,7 @@ beforeAll(async () => {
   setup = await initSetup();
 });
 
-test("refund balance", async () => {
+test("refund balance from timed vault", async () => {
   const {
     program,
     user,
@@ -24,7 +24,7 @@ test("refund balance", async () => {
   let tx: string | null = null;
   try {
     tx = await program.methods
-      .depositToVault(new anchor.BN(3_000_000))
+      .depositToVault({ timed: {} }, new anchor.BN(3_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,
@@ -39,7 +39,7 @@ test("refund balance", async () => {
   expect(tx).not.toBeNull();
 
   const [userInfoAddress] = PublicKey.findProgramAddressSync(
-    [Buffer.from("user_info"), user.publicKey.toBuffer()],
+    [Buffer.from("user_timed_info"), user.publicKey.toBuffer()],
     program.programId
   );
   const vault = await getAssociatedTokenAddress(
@@ -49,7 +49,7 @@ test("refund balance", async () => {
     TOKEN_PROGRAM
   );
 
-  const userInfo = await program.account.userInfo.fetch(userInfoAddress);
+  const userInfo = await program.account.userTimedInfo.fetch(userInfoAddress);
   expect(userInfo.availableBalance.toNumber()).toEqual(3_000_000);
   expect(await getTokenBalance(connection, vault)).toEqual(
     new anchor.BN(3_000_000)
@@ -58,7 +58,7 @@ test("refund balance", async () => {
   let tx2: string | null = null;
   try {
     tx2 = await program.methods
-      .refundBalance()
+      .refundTimedBalance()
       .accounts({
         user: user.publicKey,
         token: usdcMint,
@@ -72,7 +72,7 @@ test("refund balance", async () => {
 
   expect(tx2).not.toBeNull();
 
-  const userInfo2 = await program.account.userInfo.fetch(userInfoAddress);
+  const userInfo2 = await program.account.userTimedInfo.fetch(userInfoAddress);
   expect(userInfo2.availableBalance.toNumber()).toEqual(0);
   expect(await getTokenBalance(connection, userUsdcAccount)).toEqual(
     new anchor.BN(20_000_000)
