@@ -21,6 +21,7 @@ pub enum DepositType {
 pub mod deposit_program {
     use super::*;
 
+    // todo: split into 2 instructions
     pub fn deposit_to_vault(
         ctx: Context<DepositToVault>,
         deposit_type: DepositType,

@@ -1,7 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
-import { airdropIfRequired } from "@solana-developers/helpers";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import { getTokenBalance } from "./utils/helpers";
 import { initSetup } from "./utils/setup";
 
@@ -52,7 +51,9 @@ test("subscription", async () => {
     TOKEN_PROGRAM
   );
 
-  const userInfo = await program.account.userInfo.fetch(userInfoAddress);
+  const userInfo = await program.account.userSubscriptionInfo.fetch(
+    userInfoAddress
+  );
   expect(userInfo.availableBalance.toNumber()).toEqual(1_000_000);
   // Check vault balance and masterWallet balance
   const vaultBalance = await connection.getTokenAccountBalance(vaultAddress);

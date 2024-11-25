@@ -41,13 +41,7 @@ pub struct Subscribe<'info> {
         associated_token::authority = user_subscription_info,
         associated_token::token_program = token_program,
     )]
-    pub vault: InterfaceAccount<'info, TokenAccount>,
-    /// See Anchor example:
-    /// https://github.com/solana-developers/anchor-examples/blob/main/account-constraints/address/programs/example/src/lib.rs
-    //#[account(
-    //    address = MASTER_WALLET
-    //)]
-    //pub master_wallet: SystemAccount<'info>,
+    pub subscription_vault: InterfaceAccount<'info, TokenAccount>,
     #[account(
         mut,
         associated_token::mint = token,
@@ -105,7 +99,7 @@ fn send_to_vault(ctx: &Context<Subscribe>, amount: u64) -> Result<()> {
     send_tokens(
         ctx.accounts.user_token_account.to_account_info(),
         ctx.accounts.token.to_account_info(),
-        ctx.accounts.vault.to_account_info(),
+        ctx.accounts.subscription_vault.to_account_info(),
         ctx.accounts.user.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.token.decimals,

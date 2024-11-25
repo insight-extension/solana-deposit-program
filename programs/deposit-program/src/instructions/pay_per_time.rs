@@ -6,9 +6,8 @@ use anchor_spl::{
 };
 
 use crate::{
-    constants::{MASTER_WALLET, USER_INFO_SEED},
-    error::ErrorCode,
-    UserSubscriptionInfo,
+    constants::{MASTER_WALLET, USER_TIMED_INFO_SEED},
+    UserTimedInfo,
 };
 
 #[derive(Accounts)]
@@ -21,10 +20,10 @@ pub struct PayPerTime<'info> {
     pub token: InterfaceAccount<'info, Mint>,
     #[account(
         mut,
-        seeds = [USER_INFO_SEED, user.key().as_ref()],
-        bump = user_info.bump
+        seeds = [USER_TIMED_INFO_SEED, user.key().as_ref()],
+        bump = user_timed_info.bump
     )]
-    pub user_info: Account<'info, UserSubscriptionInfo>,
+    pub user_timed_info: Account<'info, UserTimedInfo>,
     #[account(
         mut,
         associated_token::mint = token,
@@ -35,10 +34,10 @@ pub struct PayPerTime<'info> {
     #[account(
         mut,
         associated_token::mint = token,
-        associated_token::authority = user_info,
+        associated_token::authority = user_timed_info,
         associated_token::token_program = token_program,
     )]
-    pub vault: InterfaceAccount<'info, TokenAccount>,
+    pub timed_vault: InterfaceAccount<'info, TokenAccount>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
@@ -51,34 +50,27 @@ pub fn pay_per_time_handler(ctx: Context<PayPerTime>, amount: u64) -> Result<()>
             return Err(ErrorCode::InvalidToken.into());
         }
     }
-    let current_timestamp = Clock::get()?.unix_timestamp;
-    if ctx.accounts.user_info.expiration > current_timestamp {
-        return Err(ErrorCode::AlreadySubscribed.into());
-    } else if ctx.accounts.user_info.available_balance < amount {
-        return Err(ErrorCode::InsufficientBalance.into());
-    } else {
-        send_to_master_wallet(&ctx, amount)?;
-        update_user_info(ctx, amount)?;
-        msg!(
-            "Payment of {} tokens has been sent to the master wallet.",
-            amount
-        );
-    }
+    send_to_master_wallet(&ctx, amount)?;
+    update_user_info(ctx, amount)?;
+    msg!(
+        "Payment of {} tokens has been sent to the master wallet.",
+        amount
+    );
     Ok(())
 }
 
 fn send_to_master_wallet(ctx: &Context<PayPerTime>, amount: u64) -> Result<()> {
     let seeds = &[
-        USER_INFO_SEED,
+        USER_TIMED_INFO_SEED,
         ctx.accounts.user.key.as_ref(),
-        &[ctx.accounts.user_info.bump],
+        &[ctx.accounts.user_timed_info.bump],
     ];
     let signer_seeds = &[&seeds[..]];
     let transfer_accounts = TransferChecked {
-        from: ctx.accounts.vault.to_account_info(),
+        from: ctx.accounts.timed_vault.to_account_info(),
         mint: ctx.accounts.token.to_account_info(),
         to: ctx.accounts.master_token_account.to_account_info(),
-        authority: ctx.accounts.user_info.to_account_info(),
+        authority: ctx.accounts.user_timed_info.to_account_info(),
     };
     let cpi_context = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
@@ -90,6 +82,6 @@ fn send_to_master_wallet(ctx: &Context<PayPerTime>, amount: u64) -> Result<()> {
 }
 
 fn update_user_info(ctx: Context<PayPerTime>, amount: u64) -> Result<()> {
-    ctx.accounts.user_info.available_balance -= amount;
+    ctx.accounts.user_timed_info.available_balance -= amount;
     Ok(())
 }
