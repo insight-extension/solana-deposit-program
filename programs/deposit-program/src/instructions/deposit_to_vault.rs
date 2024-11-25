@@ -14,14 +14,14 @@ pub struct DepositToVault<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
     #[account(mint::token_program = token_program)]
-    pub token: InterfaceAccount<'info, Mint>,
+    pub token: Box<InterfaceAccount<'info, Mint>>,
     #[account(
         mut,
         associated_token::mint = token,
         associated_token::authority = user,
         associated_token::token_program = token_program,
     )]
-    pub user_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub user_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         init_if_needed,        
         payer = user,
@@ -29,7 +29,7 @@ pub struct DepositToVault<'info> {
         seeds = [USER_TIMED_INFO_SEED, user.key().as_ref()],
         bump
     )]
-    pub user_timed_info: Account<'info, UserTimedInfo>,
+    pub user_timed_info: Box<Account<'info, UserTimedInfo>>,
     #[account(
         init_if_needed,
         payer = user,
@@ -37,7 +37,7 @@ pub struct DepositToVault<'info> {
         seeds = [USER_SUBSCRIPTION_INFO_SEED, user.key().as_ref()],
         bump
     )]
-    pub user_subscription_info: Account<'info, UserSubscriptionInfo>,
+    pub user_subscription_info: Box<Account<'info, UserSubscriptionInfo>>,
     #[account(
         init_if_needed,
         payer = user,
@@ -45,7 +45,7 @@ pub struct DepositToVault<'info> {
         associated_token::authority = user_timed_info,
         associated_token::token_program = token_program,
     )]
-    pub timed_vault: InterfaceAccount<'info, TokenAccount>,
+    pub timed_vault: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         init_if_needed,
         payer = user,
@@ -53,7 +53,7 @@ pub struct DepositToVault<'info> {
         associated_token::authority = user_subscription_info,
         associated_token::token_program = token_program,
     )]
-    pub subscription_vault: InterfaceAccount<'info, TokenAccount>,
+    pub subscription_vault: Box<InterfaceAccount<'info, TokenAccount>>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
