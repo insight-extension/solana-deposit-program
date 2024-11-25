@@ -101,7 +101,7 @@ export const initSetup = async () => {
     );
   }
 
-  const userUsdcBalance = new anchor.BN(20_000_000);
+  const userUsdcBalance = new anchor.BN(100_000_000);
   await mintTo(
     connection,
     user,

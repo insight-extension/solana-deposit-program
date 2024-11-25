@@ -24,7 +24,7 @@ test("subscription with vault", async () => {
   let tx: string | null = null;
   try {
     tx = await program.methods
-      .depositToVault({ subscription: {} }, new anchor.BN(6_000_000))
+      .depositToVault({ subscription: {} }, new anchor.BN(21_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,
@@ -41,7 +41,7 @@ test("subscription with vault", async () => {
   let tx2: string | null = null;
   try {
     tx2 = await program.methods
-      .subscribeWithVault(new anchor.BN(6_000_000))
+      .subscribeWithVault(new anchor.BN(21_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,
@@ -77,7 +77,7 @@ test("subscription with vault", async () => {
     new anchor.BN(1_000_000)
   );
   expect(await getTokenBalance(connection, masterWalletUsdcAccount)).toEqual(
-    new anchor.BN(5_000_000)
+    new anchor.BN(20_000_000)
   );
   const currentTimestamp = new Date().getTime() / 1000;
   expect(userInfo.expiration.toNumber()).toBeGreaterThan(currentTimestamp);

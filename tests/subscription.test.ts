@@ -24,7 +24,7 @@ test("subscription", async () => {
   let tx: string | null = null;
   try {
     tx = await program.methods
-      .subscribe(new anchor.BN(6_000_000))
+      .subscribe(new anchor.BN(21_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,
@@ -61,7 +61,7 @@ test("subscription", async () => {
     new anchor.BN(1_000_000)
   );
   expect(await getTokenBalance(connection, masterWalletUsdcAccount)).toEqual(
-    new anchor.BN(5_000_000)
+    new anchor.BN(20_000_000)
   );
   const currentTimestamp = new Date().getTime() / 1000;
   expect(userInfo.expiration.toNumber()).toBeGreaterThan(currentTimestamp);

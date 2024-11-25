@@ -21,7 +21,7 @@ test("duplicate subscription rejection", async () => {
   let tx: string | null = null;
   try {
     tx = await program.methods
-      .subscribe(new anchor.BN(6_000_000))
+      .subscribe(new anchor.BN(20_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,
@@ -39,13 +39,13 @@ test("duplicate subscription rejection", async () => {
     masterWalletUsdcAccount
   );
   expect(new anchor.BN(masterBalance.value.amount)).toEqual(
-    new anchor.BN(5_000_000)
+    new anchor.BN(20_000_000)
   );
 
   let txError: Error | null = null;
   try {
     await program.methods
-      .subscribe(new anchor.BN(5_000_000))
+      .subscribe(new anchor.BN(20_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,

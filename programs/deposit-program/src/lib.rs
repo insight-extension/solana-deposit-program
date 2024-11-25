@@ -21,7 +21,7 @@ pub enum DepositType {
 pub mod deposit_program {
     use super::*;
 
-    // todo: split into 2 instructions
+    // todo?: split into 2 instructions
     pub fn deposit_to_vault(
         ctx: Context<DepositToVault>,
         deposit_type: DepositType,
@@ -38,6 +38,7 @@ pub mod deposit_program {
         instructions::refund_subscription_balance::refund_subscription_balance_handler(ctx)
     }
 
+    // note: this one isn't actually used
     pub fn subscribe(ctx: Context<Subscribe>, amount: u64) -> Result<()> {
         instructions::subscribe::subscribe_handler(ctx, amount)
     }
