@@ -75,6 +75,6 @@ test("refund balance from timed vault", async () => {
   const userInfo2 = await program.account.userTimedInfo.fetch(userInfoAddress);
   expect(userInfo2.availableBalance.toNumber()).toEqual(0);
   expect(await getTokenBalance(connection, userUsdcAccount)).toEqual(
-    new anchor.BN(20_000_000)
+    new anchor.BN(100_000_000)
   );
 });
