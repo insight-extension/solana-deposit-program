@@ -6,7 +6,8 @@ use anchor_spl::{
 };
 
 use crate::{
-    constants::{MASTER_WALLET, USER_TIMED_INFO_SEED},
+    constants::{MASTER_WALLET, USDC_MINT, USER_TIMED_INFO_SEED},
+    error::ErrorCode,
     UserTimedInfo,
 };
 

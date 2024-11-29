@@ -24,7 +24,7 @@ test("refund balance from timed vault", async () => {
   let tx: string | null = null;
   try {
     tx = await program.methods
-      .depositToVault({ timed: {} }, new anchor.BN(3_000_000))
+      .depositToTimedVault(new anchor.BN(3_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,
