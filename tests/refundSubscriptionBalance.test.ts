@@ -24,7 +24,7 @@ test("refund balance from subscription vault", async () => {
   let tx: string | null = null;
   try {
     tx = await program.methods
-      .depositToVault({ subscription: {} }, new anchor.BN(3_000_000))
+      .depositToSubscriptionVault(new anchor.BN(3_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,

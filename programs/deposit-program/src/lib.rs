@@ -10,24 +10,21 @@ pub use state::*;
 
 declare_id!("6vsijynzE22W8A4kkvv2Kq7a36ZEFPvJP9kBgNtN43mK");
 
-// todo!: move from here
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
-pub enum DepositType {
-    Subscription,
-    Timed,
-}
-
 #[program]
 pub mod deposit_program {
     use super::*;
 
-    // todo?: split into 2 instructions
-    pub fn deposit_to_vault(
-        ctx: Context<DepositToVault>,
-        deposit_type: DepositType,
+    pub fn deposit_to_timed_vault(ctx: Context<DepositToTimedVault>, amount: u64) -> Result<()> {
+        instructions::deposit_to_timed_vault::deposit_to_timed_vault_handler(ctx, amount)
+    }
+
+    pub fn deposit_to_subscription_vault(
+        ctx: Context<DepositToSubscriptionVault>,
         amount: u64,
     ) -> Result<()> {
-        instructions::deposit_to_vault::deposit_to_vault_handler(ctx, deposit_type, amount)
+        instructions::deposit_to_subscription_vault::deposit_to_subscription_vault_handler(
+            ctx, amount,
+        )
     }
 
     pub fn refund_timed_balance(ctx: Context<RefundTimedBalance>) -> Result<()> {
