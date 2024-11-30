@@ -13,10 +13,10 @@ use crate::{
 
 #[derive(Accounts)]
 pub struct PayPerTime<'info> {
-    #[account(mut)]
-    pub user: Signer<'info>,
     #[account(mut, address = MASTER_WALLET)]
     pub master: Signer<'info>,
+    #[account(mut)]
+    pub user: SystemAccount<'info>,
     #[account(mint::token_program = token_program)]
     pub token: InterfaceAccount<'info, Mint>,
     #[account(
