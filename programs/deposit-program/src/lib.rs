@@ -8,7 +8,7 @@ pub use instructions::*;
 pub use reusable::*;
 pub use state::*;
 
-declare_id!("6vsijynzE22W8A4kkvv2Kq7a36ZEFPvJP9kBgNtN43mK");
+declare_id!("DxWhmvfUXfbPrakjq25UFM1mXk1RuqEfgnfC9fvyXrkw");
 
 #[program]
 pub mod deposit_program {

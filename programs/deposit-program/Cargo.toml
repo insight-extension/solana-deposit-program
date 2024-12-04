@@ -9,7 +9,7 @@ crate-type = ["cdylib", "lib"]
 name = "deposit_program"
 
 [features]
-default = ["localnet"]
+default = ["devnet"]
 cpi = ["no-entrypoint"]
 no-entrypoint = []
 no-idl = []
