@@ -13,8 +13,10 @@ use crate::{
 pub struct DepositToTimedVault<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
+
     #[account(mint::token_program = token_program)]
     pub token: Box<InterfaceAccount<'info, Mint>>,
+
     #[account(
         mut,
         associated_token::mint = token,
@@ -22,6 +24,7 @@ pub struct DepositToTimedVault<'info> {
         associated_token::token_program = token_program,
     )]
     pub user_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+
     #[account(
         init_if_needed,        
         payer = user,
@@ -30,6 +33,7 @@ pub struct DepositToTimedVault<'info> {
         bump
     )]
     pub user_timed_info: Box<Account<'info, UserTimedInfo>>,
+
     #[account(
         init_if_needed,
         payer = user,
@@ -38,6 +42,7 @@ pub struct DepositToTimedVault<'info> {
         associated_token::token_program = token_program,
     )]
     pub timed_vault: Box<InterfaceAccount<'info, TokenAccount>>,
+
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,

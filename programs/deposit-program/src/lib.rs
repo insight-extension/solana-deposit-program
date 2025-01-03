@@ -8,7 +8,7 @@ pub use instructions::*;
 pub use reusable::*;
 pub use state::*;
 
-declare_id!("DxWhmvfUXfbPrakjq25UFM1mXk1RuqEfgnfC9fvyXrkw");
+declare_id!("7ttwWrz4cAwKJQqCN6TAWPTznAUkWUjb1qouiZzPNxwP");
 
 #[program]
 pub mod deposit_program {
@@ -33,11 +33,6 @@ pub mod deposit_program {
 
     pub fn refund_subscription_balance(ctx: Context<RefundSubscriptionBalance>) -> Result<()> {
         instructions::refund_subscription_balance::refund_subscription_balance_handler(ctx)
-    }
-
-    // note: this one isn't actually used
-    pub fn subscribe(ctx: Context<Subscribe>, amount: u64) -> Result<()> {
-        instructions::subscribe::subscribe_handler(ctx, amount)
     }
 
     pub fn subscribe_with_vault(ctx: Context<SubscribeWithVault>, amount: u64) -> Result<()> {

@@ -12,18 +12,22 @@ use crate::{
 
 #[derive(Accounts)]
 pub struct RefundSubscriptionBalance<'info> {
-    #[account(mut)]
-    pub user: Signer<'info>,
     #[account(mut, address = MASTER_WALLET)]
     pub master: Signer<'info>,
+
+    #[account(mut)]
+    pub user: SystemAccount<'info>,
+
     #[account(mint::token_program = token_program)]
     pub token: InterfaceAccount<'info, Mint>,
+
     #[account(
         mut,
         seeds = [USER_SUBSCRIPTION_INFO_SEED, user.key().as_ref()],
         bump = user_subscription_info.bump
     )]
     pub user_subscription_info: Account<'info, UserSubscriptionInfo>,
+
     #[account(
         mut,
         associated_token::mint = token,
@@ -31,6 +35,7 @@ pub struct RefundSubscriptionBalance<'info> {
         associated_token::token_program = token_program,
     )]
     pub subscription_vault: InterfaceAccount<'info, TokenAccount>,
+
     #[account(
         mut,
         associated_token::mint = token,
@@ -38,6 +43,7 @@ pub struct RefundSubscriptionBalance<'info> {
         associated_token::token_program = token_program,
     )]
     pub user_token_account: InterfaceAccount<'info, TokenAccount>,
+
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,

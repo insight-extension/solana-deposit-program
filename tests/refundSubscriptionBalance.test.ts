@@ -66,7 +66,7 @@ test("refund balance from subscription vault", async () => {
         token: usdcMint,
         tokenProgram: TOKEN_PROGRAM,
       })
-      .signers([user, master])
+      .signers([master])
       .rpc();
   } catch (error) {
     console.log(`Error: ${error}`);

@@ -10,9 +10,6 @@ pub use refund_timed_balance::*;
 pub mod refund_subscription_balance;
 pub use refund_subscription_balance::*;
 
-pub mod subscribe;
-pub use subscribe::*;
-
 pub mod subscribe_with_vault;
 pub use subscribe_with_vault::*;
 

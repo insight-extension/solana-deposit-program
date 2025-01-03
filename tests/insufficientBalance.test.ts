@@ -18,16 +18,33 @@ test("insufficient balance", async () => {
     TOKEN_PROGRAM,
   } = setup;
 
-  let txError: Error | null = null;
+  let tx: string | null = null;
   try {
-    await program.methods
-      .subscribe(new anchor.BN(4_000_000))
+    tx = await program.methods
+      .depositToSubscriptionVault(new anchor.BN(3_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,
         tokenProgram: TOKEN_PROGRAM,
       })
-      .signers([user, master])
+      .signers([user])
+      .rpc();
+  } catch (e) {
+    console.log(e);
+  }
+
+  expect(tx).not.toBeNull();
+
+  let txError: Error | null = null;
+  try {
+    await program.methods
+      .subscribeWithVault(new anchor.BN(4_000_000))
+      .accounts({
+        user: user.publicKey,
+        token: usdcMint,
+        tokenProgram: TOKEN_PROGRAM,
+      })
+      .signers([master])
       .rpc();
   } catch (error) {
     txError = error;
@@ -36,10 +53,4 @@ test("insufficient balance", async () => {
   // Check if error is thrown and if it matches "Insufficient balance"
   expect(txError).not.toBeNull();
   expect(txError?.message).toContain("Insufficient balance");
-
-  // Verify user's token balance remains unchanged
-  const tokenBalance = await connection.getTokenAccountBalance(userUsdcAccount);
-  expect(new anchor.BN(tokenBalance.value.amount)).toEqual(
-    setup.userUsdcBalance
-  );
 });
