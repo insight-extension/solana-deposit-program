@@ -17,7 +17,7 @@ deposit_program = "7ttwWrz4cAwKJQqCN6TAWPTznAUkWUjb1qouiZzPNxwP"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Devnet"
+cluster = "Localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
