@@ -49,10 +49,6 @@ test("refund balance from subscription vault", async () => {
     TOKEN_PROGRAM
   );
 
-  const userInfo = await program.account.userSubscriptionInfo.fetch(
-    userInfoAddress
-  );
-  expect(userInfo.availableBalance.toNumber()).toEqual(3_000_000);
   expect(await getTokenBalance(connection, vault)).toEqual(
     new anchor.BN(3_000_000)
   );
@@ -73,11 +69,7 @@ test("refund balance from subscription vault", async () => {
   }
 
   expect(tx2).not.toBeNull();
-
-  const userInfo2 = await program.account.userSubscriptionInfo.fetch(
-    userInfoAddress
-  );
-  expect(userInfo2.availableBalance.toNumber()).toEqual(0);
+  expect(await getTokenBalance(connection, vault)).toEqual(new anchor.BN(0));
   expect(await getTokenBalance(connection, userUsdcAccount)).toEqual(
     new anchor.BN(100_000_000)
   );

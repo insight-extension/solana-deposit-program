@@ -56,13 +56,16 @@ pub fn refund_subscription_balance_handler(ctx: Context<RefundSubscriptionBalanc
             return Err(ErrorCode::InvalidToken.into());
         }
     }
-    let amount = ctx.accounts.user_subscription_info.available_balance;
+
+    let amount = ctx.accounts.subscription_vault.amount;
+    // note: this has potential risks
     if amount == 0 {
         return Err(ErrorCode::InsufficientBalance.into());
     }
+
     send_to_user_from_subscription_vault(&ctx, amount)?;
-    ctx.accounts.user_subscription_info.available_balance = 0;
     msg!("Refunded {} tokens to user.", amount);
+
     Ok(())
 }
 
@@ -71,23 +74,29 @@ fn send_to_user_from_subscription_vault(
     amount: u64,
 ) -> Result<()> {
     let user_key = ctx.accounts.user.key();
+
     let seeds = &[
         USER_SUBSCRIPTION_INFO_SEED,
         user_key.as_ref(),
         &[ctx.accounts.user_subscription_info.bump],
     ];
+
     let signer_seeds = &[&seeds[..]];
+
     let transfer_accounts = TransferChecked {
         from: ctx.accounts.subscription_vault.to_account_info(),
         mint: ctx.accounts.token.to_account_info(),
         to: ctx.accounts.user_token_account.to_account_info(),
         authority: ctx.accounts.user_subscription_info.to_account_info(),
     };
+
     let cpi_context = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
         transfer_accounts,
         signer_seeds,
     );
+
     transfer_checked(cpi_context, amount, ctx.accounts.token.decimals)?;
+
     Ok(())
 }

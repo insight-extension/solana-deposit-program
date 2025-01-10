@@ -41,10 +41,6 @@ test("deposit to subscription vault", async () => {
     TOKEN_PROGRAM
   );
 
-  const userInfo = await program.account.userSubscriptionInfo.fetch(
-    userInfoAddress
-  );
-  expect(userInfo.availableBalance.toNumber()).toEqual(3_000_000);
   expect(await getTokenBalance(connection, vault)).toEqual(
     new anchor.BN(3_000_000)
   );

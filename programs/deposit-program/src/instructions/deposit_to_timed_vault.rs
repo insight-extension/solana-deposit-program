@@ -55,6 +55,7 @@ pub fn deposit_to_timed_vault_handler(ctx: Context<DepositToTimedVault>, amount:
             return Err(ErrorCode::InvalidToken.into());
         }
     }
+
     send_tokens(
         ctx.accounts.user_token_account.to_account_info(),
         ctx.accounts.token.to_account_info(), 
@@ -64,13 +65,9 @@ pub fn deposit_to_timed_vault_handler(ctx: Context<DepositToTimedVault>, amount:
         ctx.accounts.token.decimals,
         amount,
     )?;
-    save_user_timed_info(ctx, amount)?;
-    msg!("Deposited {} tokens to timed vault.", amount);
-    Ok(())
-}
 
-fn save_user_timed_info(ctx: Context<DepositToTimedVault>, amount: u64) -> Result<()> {
-    ctx.accounts.user_timed_info.available_balance += amount;
     ctx.accounts.user_timed_info.bump = ctx.bumps.user_timed_info;
+    msg!("Deposited {} tokens to timed vault.", amount);
+
     Ok(())
 }

@@ -41,8 +41,6 @@ test("deposit to timed vault", async () => {
     TOKEN_PROGRAM
   );
 
-  const userInfo = await program.account.userTimedInfo.fetch(userInfoAddress);
-  expect(userInfo.availableBalance.toNumber()).toEqual(3_000_000);
   expect(await getTokenBalance(connection, vault)).toEqual(
     new anchor.BN(3_000_000)
   );

@@ -8,15 +8,7 @@ beforeAll(async () => {
 });
 
 test("insufficient balance", async () => {
-  const {
-    program,
-    user,
-    master,
-    usdcMint,
-    userUsdcAccount,
-    connection,
-    TOKEN_PROGRAM,
-  } = setup;
+  const { program, user, master, usdcMint, TOKEN_PROGRAM } = setup;
 
   let tx: string | null = null;
   try {

@@ -70,7 +70,7 @@ test("subscription with vault", async () => {
   const userInfo = await program.account.userSubscriptionInfo.fetch(
     userInfoAddress
   );
-  expect(userInfo.availableBalance.toNumber()).toEqual(1_000_000);
+
   // Check vault balance and masterWallet balance
   const vaultBalance = await connection.getTokenAccountBalance(vaultAddress);
   expect(new anchor.BN(vaultBalance.value.amount)).toEqual(

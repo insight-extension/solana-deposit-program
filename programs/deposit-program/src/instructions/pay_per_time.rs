@@ -57,12 +57,13 @@ pub fn pay_per_time_handler(ctx: Context<PayPerTime>, amount: u64) -> Result<()>
             return Err(ErrorCode::InvalidToken.into());
         }
     }
+
     send_to_master_wallet(&ctx, amount)?;
-    update_user_info(ctx, amount)?;
     msg!(
         "Payment of {} tokens has been sent to the master wallet.",
         amount
     );
+
     Ok(())
 }
 
@@ -72,23 +73,23 @@ fn send_to_master_wallet(ctx: &Context<PayPerTime>, amount: u64) -> Result<()> {
         ctx.accounts.user.key.as_ref(),
         &[ctx.accounts.user_timed_info.bump],
     ];
+
     let signer_seeds = &[&seeds[..]];
+
     let transfer_accounts = TransferChecked {
         from: ctx.accounts.timed_vault.to_account_info(),
         mint: ctx.accounts.token.to_account_info(),
         to: ctx.accounts.master_token_account.to_account_info(),
         authority: ctx.accounts.user_timed_info.to_account_info(),
     };
+
     let cpi_context = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
         transfer_accounts,
         signer_seeds,
     );
-    transfer_checked(cpi_context, amount, ctx.accounts.token.decimals)?;
-    Ok(())
-}
 
-fn update_user_info(ctx: Context<PayPerTime>, amount: u64) -> Result<()> {
-    ctx.accounts.user_timed_info.available_balance -= amount;
+    transfer_checked(cpi_context, amount, ctx.accounts.token.decimals)?;
+
     Ok(())
 }
