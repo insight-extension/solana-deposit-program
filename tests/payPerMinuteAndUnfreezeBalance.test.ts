@@ -1,4 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
+import { PublicKey } from "@solana/web3.js";
+import { BN } from "bn.js";
 import { getTokenBalance } from "./utils/helpers";
 import { initSetup } from "./utils/setup";
 
@@ -8,21 +11,13 @@ beforeAll(async () => {
   setup = await initSetup();
 });
 
-test("pay per time", async () => {
-  const {
-    program,
-    user,
-    master,
-    usdcMint,
-    TOKEN_PROGRAM,
-    connection,
-    masterWalletUsdcAccount,
-  } = setup;
+test("pay per minute and unfreeze balance", async () => {
+  const { program, user, master, usdcMint, TOKEN_PROGRAM } = setup;
 
-  let tx: string | null = null;
+  let tx1: string | null = null;
   try {
-    tx = await program.methods
-      .depositToTimedVault(new anchor.BN(1_000_000))
+    tx1 = await program.methods
+      .deposit(new anchor.BN(3_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,
@@ -34,12 +29,27 @@ test("pay per time", async () => {
     console.log(`Error: ${error}`);
   }
 
-  expect(tx).not.toBeNull();
+  expect(tx1).toBeTruthy();
 
   let tx2: string | null = null;
   try {
     tx2 = await program.methods
-      .payPerTime(new anchor.BN(1_000_000))
+      .freezeBalance()
+      .accounts({
+        user: user.publicKey,
+      })
+      .signers([master])
+      .rpc();
+  } catch (error) {
+    console.log(`Error: ${error}`);
+  }
+
+  expect(tx2).toBeTruthy();
+
+  let tx3: string | null = null;
+  try {
+    tx3 = await program.methods
+      .payPerMinuteAndUnfreezeBalance(new anchor.BN(3_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,
@@ -51,8 +61,5 @@ test("pay per time", async () => {
     console.log(`Error: ${error}`);
   }
 
-  expect(tx2).not.toBeNull();
-  expect(await getTokenBalance(connection, masterWalletUsdcAccount)).toEqual(
-    new anchor.BN(1_000_000)
-  );
+  expect(tx3).toBeTruthy();
 });

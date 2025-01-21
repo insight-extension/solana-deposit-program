@@ -1,4 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
+import { PublicKey } from "@solana/web3.js";
+import { getTokenBalance } from "./utils/helpers";
 import { initSetup } from "./utils/setup";
 
 let setup: Awaited<ReturnType<typeof initSetup>>;
@@ -7,13 +10,13 @@ beforeAll(async () => {
   setup = await initSetup();
 });
 
-test("insufficient balance", async () => {
+test("refund", async () => {
   const { program, user, master, usdcMint, TOKEN_PROGRAM } = setup;
 
-  let tx: string | null = null;
+  let tx1: string | null = null;
   try {
-    tx = await program.methods
-      .depositToSubscriptionVault(new anchor.BN(3_000_000))
+    tx1 = await program.methods
+      .deposit(new anchor.BN(3_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,
@@ -21,16 +24,16 @@ test("insufficient balance", async () => {
       })
       .signers([user])
       .rpc();
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.log(`Error: ${error}`);
   }
 
-  expect(tx).not.toBeNull();
+  expect(tx1).toBeTruthy();
 
-  let txError: Error | null = null;
+  let tx2: string | null = null;
   try {
-    await program.methods
-      .subscribeWithVault(new anchor.BN(4_000_000))
+    tx2 = await program.methods
+      .refund(new anchor.BN(3_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,
@@ -39,10 +42,8 @@ test("insufficient balance", async () => {
       .signers([master])
       .rpc();
   } catch (error) {
-    txError = error;
+    console.log(`Error: ${error}`);
   }
 
-  // Check if error is thrown and if it matches "Insufficient balance"
-  expect(txError).not.toBeNull();
-  expect(txError?.message).toContain("Insufficient balance");
+  expect(tx2).toBeTruthy();
 });

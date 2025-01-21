@@ -1,17 +1,18 @@
 use anchor_lang::prelude::*;
+
 use anchor_spl::{
     associated_token::AssociatedToken,
     token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
 
 use crate::{
-    constants::{MASTER_WALLET, USDC_MINT, USER_SUBSCRIPTION_INFO_SEED},
+    constants::{MASTER_WALLET, USDC_MINT, USER_TIMED_INFO_SEED},
     error::ErrorCode,
-    UserSubscriptionInfo,
+    UserInfo,
 };
 
 #[derive(Accounts)]
-pub struct RefundSubscriptionBalance<'info> {
+pub struct PayPerHourAndUnfreezeBalance<'info> {
     #[account(mut, address = MASTER_WALLET)]
     pub master: Signer<'info>,
 
@@ -23,33 +24,37 @@ pub struct RefundSubscriptionBalance<'info> {
 
     #[account(
         mut,
-        seeds = [USER_SUBSCRIPTION_INFO_SEED, user.key().as_ref()],
-        bump = user_subscription_info.bump
+        seeds = [b"user_info", user.key().as_ref()],
+        bump = user_info.bump
     )]
-    pub user_subscription_info: Account<'info, UserSubscriptionInfo>,
+    pub user_info: Account<'info, UserInfo>,
 
     #[account(
         mut,
         associated_token::mint = token,
-        associated_token::authority = user_subscription_info,
-        associated_token::token_program = token_program,
+        associated_token::authority = master,
+        associated_token::token_program = token_program
     )]
-    pub subscription_vault: InterfaceAccount<'info, TokenAccount>,
+    pub master_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         mut,
         associated_token::mint = token,
-        associated_token::authority = user,
+        associated_token::authority = user_info,
         associated_token::token_program = token_program,
     )]
-    pub user_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub vault: InterfaceAccount<'info, TokenAccount>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }
 
-pub fn refund_subscription_balance_handler(ctx: Context<RefundSubscriptionBalance>) -> Result<()> {
+pub fn pay_per_hour_and_unfreeze_balance(
+    ctx: Context<PayPerHourAndUnfreezeBalance>,
+    amount: u64,
+    per_hour_left: i64,
+) -> Result<()> {
     #[cfg(any(feature = "devnet", feature = "mainnet"))]
     {
         if ctx.accounts.token.key() != USDC_MINT {
@@ -57,37 +62,34 @@ pub fn refund_subscription_balance_handler(ctx: Context<RefundSubscriptionBalanc
         }
     }
 
-    let amount = ctx.accounts.subscription_vault.amount;
-    // note: this has potential risks
-    if amount == 0 {
-        return Err(ErrorCode::InsufficientBalance.into());
-    }
+    send_to_master_wallet(&ctx, amount)?;
+    msg!(
+        "Payment of {} tokens has been sent to the master wallet.",
+        amount
+    );
 
-    send_to_user_from_subscription_vault(&ctx, amount)?;
-    msg!("Refunded {} tokens to user.", amount);
+    ctx.accounts.user_info.per_hour_left = per_hour_left;
+    msg!("Balance has been frozen for {} hours.", per_hour_left);
+    ctx.accounts.user_info.is_balance_frozen = false;
+    msg!("Balance has been unfrozen.");
 
     Ok(())
 }
 
-fn send_to_user_from_subscription_vault(
-    ctx: &Context<RefundSubscriptionBalance>,
-    amount: u64,
-) -> Result<()> {
-    let user_key = ctx.accounts.user.key();
-
+fn send_to_master_wallet(ctx: &Context<PayPerHourAndUnfreezeBalance>, amount: u64) -> Result<()> {
     let seeds = &[
-        USER_SUBSCRIPTION_INFO_SEED,
-        user_key.as_ref(),
-        &[ctx.accounts.user_subscription_info.bump],
+        b"user_info",
+        ctx.accounts.user.key.as_ref(),
+        &[ctx.accounts.user_info.bump],
     ];
 
     let signer_seeds = &[&seeds[..]];
 
     let transfer_accounts = TransferChecked {
-        from: ctx.accounts.subscription_vault.to_account_info(),
+        from: ctx.accounts.vault.to_account_info(),
         mint: ctx.accounts.token.to_account_info(),
-        to: ctx.accounts.user_token_account.to_account_info(),
-        authority: ctx.accounts.user_subscription_info.to_account_info(),
+        to: ctx.accounts.master_token_account.to_account_info(),
+        authority: ctx.accounts.user_info.to_account_info(),
     };
 
     let cpi_context = CpiContext::new_with_signer(

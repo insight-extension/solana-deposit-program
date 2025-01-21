@@ -6,13 +6,13 @@ use anchor_spl::{
 };
 
 use crate::{
-    constants::{MASTER_WALLET, USDC_MINT, USER_SUBSCRIPTION_INFO_SEED},
+    constants::{MASTER_WALLET, USDC_MINT, USER_TIMED_INFO_SEED},
     error::ErrorCode,
-    get_subscription_level, UserSubscriptionInfo,
+    UserInfo,
 };
 
 #[derive(Accounts)]
-pub struct SubscribeWithVault<'info> {
+pub struct PayPerMinuteAndUnfreezeBalance<'info> {
     #[account(mut, address = MASTER_WALLET)]
     pub master: Signer<'info>,
 
@@ -24,10 +24,10 @@ pub struct SubscribeWithVault<'info> {
 
     #[account(
         mut,
-        seeds = [USER_SUBSCRIPTION_INFO_SEED, user.key().as_ref()],
-        bump = user_subscription_info.bump
+        seeds = [b"user_info", user.key().as_ref()],
+        bump = user_info.bump
     )]
-    pub user_subscription_info: Account<'info, UserSubscriptionInfo>,
+    pub user_info: Account<'info, UserInfo>,
 
     #[account(
         mut,
@@ -40,17 +40,20 @@ pub struct SubscribeWithVault<'info> {
     #[account(
         mut,
         associated_token::mint = token,
-        associated_token::authority = user_subscription_info,
+        associated_token::authority = user_info,
         associated_token::token_program = token_program,
     )]
-    pub subscription_vault: InterfaceAccount<'info, TokenAccount>,
+    pub vault: InterfaceAccount<'info, TokenAccount>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }
 
-pub fn subscribe_with_vault_handler(ctx: Context<SubscribeWithVault>, amount: u64) -> Result<()> {
+pub fn pay_per_minute_and_unfreeze_balance(
+    ctx: Context<PayPerMinuteAndUnfreezeBalance>,
+    amount: u64,
+) -> Result<()> {
     #[cfg(any(feature = "devnet", feature = "mainnet"))]
     {
         if ctx.accounts.token.key() != USDC_MINT {
@@ -58,44 +61,32 @@ pub fn subscribe_with_vault_handler(ctx: Context<SubscribeWithVault>, amount: u6
         }
     }
 
-    let current_timestamp = Clock::get()?.unix_timestamp;
-    if ctx.accounts.user_subscription_info.expiration > current_timestamp {
-        return Err(ErrorCode::AlreadySubscribed.into());
-    } else if ctx.accounts.subscription_vault.amount < amount {
-        return Err(ErrorCode::InsufficientBalance.into());
-    } else {
-        let (subscription_cost, duration) = get_subscription_level(amount)?;
+    send_to_master_wallet(&ctx, amount)?;
+    msg!(
+        "Payment of {} tokens has been sent to the master wallet.",
+        amount
+    );
 
-        send_to_master_wallet(&ctx, subscription_cost)?;
-        msg!(
-            "Subscription cost of {} tokens has been sent to the master wallet.",
-            subscription_cost
-        );
-
-        let current_timestamp = Clock::get()?.unix_timestamp;
-        let expiration = current_timestamp + duration as i64;
-
-        ctx.accounts.user_subscription_info.expiration = expiration;
-    }
-    msg!("Subscription successful.");
+    ctx.accounts.user_info.is_balance_frozen = false;
+    msg!("Balance has been unfrozen.");
 
     Ok(())
 }
 
-fn send_to_master_wallet(ctx: &Context<SubscribeWithVault>, amount: u64) -> Result<()> {
+fn send_to_master_wallet(ctx: &Context<PayPerMinuteAndUnfreezeBalance>, amount: u64) -> Result<()> {
     let seeds = &[
-        USER_SUBSCRIPTION_INFO_SEED,
+        b"user_info",
         ctx.accounts.user.key.as_ref(),
-        &[ctx.accounts.user_subscription_info.bump],
+        &[ctx.accounts.user_info.bump],
     ];
 
     let signer_seeds = &[&seeds[..]];
 
     let transfer_accounts = TransferChecked {
-        from: ctx.accounts.subscription_vault.to_account_info(),
+        from: ctx.accounts.vault.to_account_info(),
         mint: ctx.accounts.token.to_account_info(),
         to: ctx.accounts.master_token_account.to_account_info(),
-        authority: ctx.accounts.user_subscription_info.to_account_info(),
+        authority: ctx.accounts.user_info.to_account_info(),
     };
 
     let cpi_context = CpiContext::new_with_signer(
