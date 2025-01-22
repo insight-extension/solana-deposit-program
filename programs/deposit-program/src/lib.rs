@@ -22,6 +22,10 @@ pub mod deposit_program {
         instructions::balance_state::freeze_balance(ctx)
     }
 
+    pub fn unfreeze_balance(ctx: Context<BalanceState>) -> Result<()> {
+        instructions::balance_state::unfreeze_balance(ctx)
+    }
+
     pub fn pay_per_minute_and_unfreeze_balance(
         ctx: Context<PayPerMinuteAndUnfreezeBalance>,
         amount: u64,

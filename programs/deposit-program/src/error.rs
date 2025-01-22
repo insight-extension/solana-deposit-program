@@ -8,4 +8,6 @@ pub enum ErrorCode {
     BalanceAlreadyFrozen,
     #[msg("Balance frozen")]
     BalanceFrozen,
+    #[msg("Balance not frozen")]
+    BalanceNotFrozen,
 }

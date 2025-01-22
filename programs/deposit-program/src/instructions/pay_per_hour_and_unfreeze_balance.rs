@@ -5,11 +5,7 @@ use anchor_spl::{
     token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
 
-use crate::{
-    constants::{MASTER_WALLET, USDC_MINT, USER_TIMED_INFO_SEED},
-    error::ErrorCode,
-    UserInfo,
-};
+use crate::{constants::MASTER_WALLET, UserInfo};
 
 #[derive(Accounts)]
 pub struct PayPerHourAndUnfreezeBalance<'info> {

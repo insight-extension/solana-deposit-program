@@ -10,7 +10,7 @@ beforeAll(async () => {
   setup = await initSetup();
 });
 
-test("pay per minute and unfreeze balance", async () => {
+test("pay per hour and unfreeze balance", async () => {
   const { program, user, master, usdcMint, TOKEN_PROGRAM } = setup;
 
   let tx1: string | null = null;
@@ -48,7 +48,10 @@ test("pay per minute and unfreeze balance", async () => {
   let tx3: string | null = null;
   try {
     tx3 = await program.methods
-      .payPerMinuteAndUnfreezeBalance(new anchor.BN(3_000_000))
+      .payPerHourAndUnfreezeBalance(
+        new anchor.BN(3_000_000),
+        new anchor.BN(300)
+      )
       .accounts({
         user: user.publicKey,
         token: usdcMint,
