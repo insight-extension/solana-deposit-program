@@ -1,6 +1,10 @@
 use anchor_lang::prelude::*;
 
-use crate::{constants::MASTER_WALLET, error::ErrorCode, UserInfo};
+use crate::{
+    constants::{MASTER_WALLET, USER_INFO_SEED},
+    error::ErrorCode,
+    UserInfo,
+};
 
 #[derive(Accounts)]
 pub struct BalanceState<'info> {
@@ -12,7 +16,7 @@ pub struct BalanceState<'info> {
 
     #[account(
         mut,
-        seeds = [b"user_info", user.key().as_ref()],
+        seeds = [USER_INFO_SEED, user.key().as_ref()],
         bump = user_info.bump
     )]
     pub user_info: Account<'info, UserInfo>,

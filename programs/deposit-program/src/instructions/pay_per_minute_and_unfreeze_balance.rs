@@ -5,7 +5,10 @@ use anchor_spl::{
     token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
 
-use crate::{constants::MASTER_WALLET, UserInfo};
+use crate::{
+    constants::{MASTER_WALLET, USER_INFO_SEED},
+    UserInfo,
+};
 
 #[derive(Accounts)]
 pub struct PayPerMinuteAndUnfreezeBalance<'info> {
@@ -20,7 +23,7 @@ pub struct PayPerMinuteAndUnfreezeBalance<'info> {
 
     #[account(
         mut,
-        seeds = [b"user_info", user.key().as_ref()],
+        seeds = [USER_INFO_SEED, user.key().as_ref()],
         bump = user_info.bump
     )]
     pub user_info: Account<'info, UserInfo>,
@@ -71,7 +74,7 @@ pub fn pay_per_minute_and_unfreeze_balance(
 
 fn send_to_master_wallet(ctx: &Context<PayPerMinuteAndUnfreezeBalance>, amount: u64) -> Result<()> {
     let seeds = &[
-        b"user_info",
+        USER_INFO_SEED,
         ctx.accounts.user.key.as_ref(),
         &[ctx.accounts.user_info.bump],
     ];

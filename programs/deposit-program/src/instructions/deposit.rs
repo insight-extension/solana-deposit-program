@@ -6,7 +6,7 @@ use anchor_spl::{
 };
 
 use crate::{
-    send_tokens, UserInfo
+    constants::USER_INFO_SEED, send_tokens, UserInfo
 };
 
 #[derive(Accounts)]
@@ -29,7 +29,7 @@ pub struct Deposit<'info> {
         init_if_needed,        
         payer = user,
         space = 8 + UserInfo::INIT_SPACE,
-        seeds = [b"user_info", user.key().as_ref()],
+        seeds = [USER_INFO_SEED, user.key().as_ref()],
         bump
     )]
     pub user_info: Box<Account<'info, UserInfo>>,
