@@ -11,7 +11,26 @@ beforeAll(async () => {
 });
 
 test("refund", async () => {
-  const { program, user, master, usdcMint, TOKEN_PROGRAM } = setup;
+  const {
+    program,
+    connection,
+    user,
+    userUsdcAccount,
+    master,
+    usdcMint,
+    TOKEN_PROGRAM,
+  } = setup;
+
+  const [userInfoAddress] = PublicKey.findProgramAddressSync(
+    [Buffer.from("user_info"), user.publicKey.toBuffer()],
+    program.programId
+  );
+  const vault = await getAssociatedTokenAddress(
+    usdcMint,
+    userInfoAddress,
+    true,
+    TOKEN_PROGRAM
+  );
 
   let tx1: string | null = null;
   try {
@@ -29,6 +48,9 @@ test("refund", async () => {
   }
 
   expect(tx1).toBeTruthy();
+  expect(await getTokenBalance(connection, vault)).toEqual(
+    new anchor.BN(3_000_000)
+  );
 
   let tx2: string | null = null;
   try {
@@ -46,4 +68,8 @@ test("refund", async () => {
   }
 
   expect(tx2).toBeTruthy();
+  expect(await getTokenBalance(connection, vault)).toEqual(new anchor.BN(0));
+  expect(await getTokenBalance(connection, userUsdcAccount)).toEqual(
+    new anchor.BN(100_000_000)
+  );
 });

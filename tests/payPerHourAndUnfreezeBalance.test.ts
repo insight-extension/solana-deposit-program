@@ -11,7 +11,18 @@ beforeAll(async () => {
 });
 
 test("pay per hour and unfreeze balance", async () => {
-  const { program, user, master, usdcMint, TOKEN_PROGRAM } = setup;
+  const { program, connection, user, master, usdcMint, TOKEN_PROGRAM } = setup;
+
+  const [userInfoAddress] = PublicKey.findProgramAddressSync(
+    [Buffer.from("user_info"), user.publicKey.toBuffer()],
+    program.programId
+  );
+  const vault = await getAssociatedTokenAddress(
+    usdcMint,
+    userInfoAddress,
+    true,
+    TOKEN_PROGRAM
+  );
 
   let tx1: string | null = null;
   try {
@@ -29,6 +40,9 @@ test("pay per hour and unfreeze balance", async () => {
   }
 
   expect(tx1).toBeTruthy();
+  expect(await getTokenBalance(connection, vault)).toEqual(
+    new anchor.BN(3_000_000)
+  );
 
   let tx2: string | null = null;
   try {
@@ -43,7 +57,12 @@ test("pay per hour and unfreeze balance", async () => {
     console.log(`Error: ${error}`);
   }
 
+  const userInfoWithFrozenBalance = await program.account.userInfo.fetch(
+    userInfoAddress
+  );
+
   expect(tx2).toBeTruthy();
+  expect(userInfoWithFrozenBalance.isBalanceFrozen).toBeTruthy();
 
   let tx3: string | null = null;
   try {
@@ -63,5 +82,12 @@ test("pay per hour and unfreeze balance", async () => {
     console.log(`Error: ${error}`);
   }
 
+  const userInfoWithUnfrozenBalance = await program.account.userInfo.fetch(
+    userInfoAddress
+  );
+
   expect(tx3).toBeTruthy();
+  expect(await getTokenBalance(connection, vault)).toEqual(new anchor.BN(0));
+  expect(userInfoWithUnfrozenBalance.isBalanceFrozen).toBeFalsy();
+  expect(userInfoWithUnfrozenBalance.perHourLeft).toEqual(new anchor.BN(300));
 });
