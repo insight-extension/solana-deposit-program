@@ -6,7 +6,10 @@ use anchor_spl::{
 };
 
 use crate::{
-    constants::USER_INFO_SEED, send_tokens, UserInfo
+    constants::{USDC_MINT, USER_INFO_SEED},
+    send_tokens,
+    error::ErrorCode,
+    UserInfo,
 };
 
 #[derive(Accounts)]

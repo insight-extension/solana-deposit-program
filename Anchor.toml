@@ -5,19 +5,19 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-deposit_program = "7ttwWrz4cAwKJQqCN6TAWPTznAUkWUjb1qouiZzPNxwP"
+deposit_program = "Bf4qyNgbkoSUsxAQakj9iqp7GApdnT6qJWLikDzK9Rqn"
 
 [programs.localnet]
-deposit_program = "7ttwWrz4cAwKJQqCN6TAWPTznAUkWUjb1qouiZzPNxwP"
+deposit_program = "Bf4qyNgbkoSUsxAQakj9iqp7GApdnT6qJWLikDzK9Rqn"
 
 [programs.mainnet]
-deposit_program = "7ttwWrz4cAwKJQqCN6TAWPTznAUkWUjb1qouiZzPNxwP"
+deposit_program = "Bf4qyNgbkoSUsxAQakj9iqp7GApdnT6qJWLikDzK9Rqn"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "Devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
