@@ -8,38 +8,46 @@ pub use instructions::*;
 pub use reusable::*;
 pub use state::*;
 
-declare_id!("7ttwWrz4cAwKJQqCN6TAWPTznAUkWUjb1qouiZzPNxwP");
+declare_id!("Bf4qyNgbkoSUsxAQakj9iqp7GApdnT6qJWLikDzK9Rqn");
 
 #[program]
 pub mod deposit_program {
     use super::*;
 
-    pub fn deposit_to_timed_vault(ctx: Context<DepositToTimedVault>, amount: u64) -> Result<()> {
-        instructions::deposit_to_timed_vault::deposit_to_timed_vault_handler(ctx, amount)
+    pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
+        instructions::deposit::deposit(ctx, amount)
     }
 
-    pub fn deposit_to_subscription_vault(
-        ctx: Context<DepositToSubscriptionVault>,
+    pub fn freeze_balance(ctx: Context<BalanceState>) -> Result<()> {
+        instructions::balance_state::freeze_balance(ctx)
+    }
+
+    pub fn unfreeze_balance(ctx: Context<BalanceState>) -> Result<()> {
+        instructions::balance_state::unfreeze_balance(ctx)
+    }
+
+    pub fn pay_per_minute_and_unfreeze_balance(
+        ctx: Context<PayPerMinuteAndUnfreezeBalance>,
         amount: u64,
     ) -> Result<()> {
-        instructions::deposit_to_subscription_vault::deposit_to_subscription_vault_handler(
+        instructions::pay_per_minute_and_unfreeze_balance::pay_per_minute_and_unfreeze_balance(
             ctx, amount,
         )
     }
 
-    pub fn refund_timed_balance(ctx: Context<RefundTimedBalance>) -> Result<()> {
-        instructions::refund_timed_balance::refund_timed_balance_handler(ctx)
+    pub fn pay_per_hour_and_unfreeze_balance(
+        ctx: Context<PayPerHourAndUnfreezeBalance>,
+        amount: u64,
+        per_hour_left: i64,
+    ) -> Result<()> {
+        instructions::pay_per_hour_and_unfreeze_balance::pay_per_hour_and_unfreeze_balance(
+            ctx,
+            amount,
+            per_hour_left,
+        )
     }
 
-    pub fn refund_subscription_balance(ctx: Context<RefundSubscriptionBalance>) -> Result<()> {
-        instructions::refund_subscription_balance::refund_subscription_balance_handler(ctx)
-    }
-
-    pub fn subscribe_with_vault(ctx: Context<SubscribeWithVault>, amount: u64) -> Result<()> {
-        instructions::subscribe_with_vault::subscribe_with_vault_handler(ctx, amount)
-    }
-
-    pub fn pay_per_time(ctx: Context<PayPerTime>, amount: u64) -> Result<()> {
-        instructions::pay_per_time::pay_per_time_handler(ctx, amount)
+    pub fn refund(ctx: Context<Refund>, amount: u64) -> Result<()> {
+        instructions::refund::refund(ctx, amount)
     }
 }

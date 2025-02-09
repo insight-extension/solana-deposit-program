@@ -1,17 +1,14 @@
-pub mod deposit_to_timed_vault;
-pub use deposit_to_timed_vault::*;
+pub mod pay_per_minute_and_unfreeze_balance;
+pub use pay_per_minute_and_unfreeze_balance::*;
 
-pub mod deposit_to_subscription_vault;
-pub use deposit_to_subscription_vault::*;
+pub mod pay_per_hour_and_unfreeze_balance;
+pub use pay_per_hour_and_unfreeze_balance::*;
 
-pub mod refund_timed_balance;
-pub use refund_timed_balance::*;
+pub mod deposit;
+pub use deposit::*;
 
-pub mod refund_subscription_balance;
-pub use refund_subscription_balance::*;
+pub mod balance_state;
+pub use balance_state::*;
 
-pub mod subscribe_with_vault;
-pub use subscribe_with_vault::*;
-
-pub mod pay_per_time;
-pub use pay_per_time::*;
+pub mod refund;
+pub use refund::*;

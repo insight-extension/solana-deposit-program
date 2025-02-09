@@ -10,21 +10,32 @@ beforeAll(async () => {
   setup = await initSetup();
 });
 
-test("refund balance from subscription vault", async () => {
+test("refund", async () => {
   const {
     program,
-    user,
-    master,
     connection,
-    usdcMint,
+    user,
     userUsdcAccount,
+    master,
+    usdcMint,
     TOKEN_PROGRAM,
   } = setup;
 
-  let tx: string | null = null;
+  const [userInfoAddress] = PublicKey.findProgramAddressSync(
+    [Buffer.from("user_info"), user.publicKey.toBuffer()],
+    program.programId
+  );
+  const vault = await getAssociatedTokenAddress(
+    usdcMint,
+    userInfoAddress,
+    true,
+    TOKEN_PROGRAM
+  );
+
+  let tx1: string | null = null;
   try {
-    tx = await program.methods
-      .depositToSubscriptionVault(new anchor.BN(3_000_000))
+    tx1 = await program.methods
+      .deposit(new anchor.BN(3_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,
@@ -36,23 +47,7 @@ test("refund balance from subscription vault", async () => {
     console.log(`Error: ${error}`);
   }
 
-  expect(tx).not.toBeNull();
-
-  const [userInfoAddress] = PublicKey.findProgramAddressSync(
-    [Buffer.from("user_subscription_info"), user.publicKey.toBuffer()],
-    program.programId
-  );
-  const vault = await getAssociatedTokenAddress(
-    usdcMint,
-    userInfoAddress,
-    true,
-    TOKEN_PROGRAM
-  );
-
-  const userInfo = await program.account.userSubscriptionInfo.fetch(
-    userInfoAddress
-  );
-  expect(userInfo.availableBalance.toNumber()).toEqual(3_000_000);
+  expect(tx1).toBeTruthy();
   expect(await getTokenBalance(connection, vault)).toEqual(
     new anchor.BN(3_000_000)
   );
@@ -60,7 +55,7 @@ test("refund balance from subscription vault", async () => {
   let tx2: string | null = null;
   try {
     tx2 = await program.methods
-      .refundSubscriptionBalance()
+      .refund(new anchor.BN(3_000_000))
       .accounts({
         user: user.publicKey,
         token: usdcMint,
@@ -72,12 +67,8 @@ test("refund balance from subscription vault", async () => {
     console.log(`Error: ${error}`);
   }
 
-  expect(tx2).not.toBeNull();
-
-  const userInfo2 = await program.account.userSubscriptionInfo.fetch(
-    userInfoAddress
-  );
-  expect(userInfo2.availableBalance.toNumber()).toEqual(0);
+  expect(tx2).toBeTruthy();
+  expect(await getTokenBalance(connection, vault)).toEqual(new anchor.BN(0));
   expect(await getTokenBalance(connection, userUsdcAccount)).toEqual(
     new anchor.BN(100_000_000)
   );

@@ -6,11 +6,14 @@ use anchor_spl::{
 };
 
 use crate::{
-    constants::{USDC_MINT, USER_TIMED_INFO_SEED}, send_tokens, UserTimedInfo, error::ErrorCode,
+    constants::{USDC_MINT, USER_INFO_SEED},
+    send_tokens,
+    error::ErrorCode,
+    UserInfo,
 };
 
 #[derive(Accounts)]
-pub struct DepositToTimedVault<'info> {
+pub struct Deposit<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
 
@@ -28,49 +31,46 @@ pub struct DepositToTimedVault<'info> {
     #[account(
         init_if_needed,        
         payer = user,
-        space = 8 + UserTimedInfo::INIT_SPACE,
-        seeds = [USER_TIMED_INFO_SEED, user.key().as_ref()],
+        space = 8 + UserInfo::INIT_SPACE,
+        seeds = [USER_INFO_SEED, user.key().as_ref()],
         bump
     )]
-    pub user_timed_info: Box<Account<'info, UserTimedInfo>>,
+    pub user_info: Box<Account<'info, UserInfo>>,
 
     #[account(
         init_if_needed,
         payer = user,
         associated_token::mint = token,
-        associated_token::authority = user_timed_info,
+        associated_token::authority = user_info,
         associated_token::token_program = token_program,
     )]
-    pub timed_vault: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub vault: Box<InterfaceAccount<'info, TokenAccount>>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }
 
-pub fn deposit_to_timed_vault_handler(ctx: Context<DepositToTimedVault>, amount: u64) -> Result<()> {
+pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
     #[cfg(any(feature = "devnet", feature = "mainnet"))]
     {
         if ctx.accounts.token.key() != USDC_MINT {
             return Err(ErrorCode::InvalidToken.into());
         }
     }
+
     send_tokens(
         ctx.accounts.user_token_account.to_account_info(),
         ctx.accounts.token.to_account_info(), 
-        ctx.accounts.timed_vault.to_account_info(),
+        ctx.accounts.vault.to_account_info(),
         ctx.accounts.user.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.token.decimals,
         amount,
     )?;
-    save_user_timed_info(ctx, amount)?;
-    msg!("Deposited {} tokens to timed vault.", amount);
-    Ok(())
-}
 
-fn save_user_timed_info(ctx: Context<DepositToTimedVault>, amount: u64) -> Result<()> {
-    ctx.accounts.user_timed_info.available_balance += amount;
-    ctx.accounts.user_timed_info.bump = ctx.bumps.user_timed_info;
+    ctx.accounts.user_info.bump = ctx.bumps.user_info;
+    msg!("Deposited {} tokens to vault.", amount);
+
     Ok(())
 }
