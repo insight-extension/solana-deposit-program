@@ -6,7 +6,7 @@ use anchor_spl::{
 };
 
 use crate::{
-    constants::{USDC_MINT, USER_INFO_SEED},
+    constants::{INSIGHT_MINT, USER_INFO_SEED},
     send_tokens,
     error::ErrorCode,
     UserInfo,
@@ -54,7 +54,7 @@ pub struct Deposit<'info> {
 pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
     #[cfg(any(feature = "devnet", feature = "mainnet"))]
     {
-        if ctx.accounts.token.key() != USDC_MINT {
+        if ctx.accounts.token.key() != INSIGHT_MINT {
             return Err(ErrorCode::InvalidToken.into());
         }
     }

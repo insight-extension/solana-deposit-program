@@ -6,7 +6,7 @@ use anchor_spl::{
 };
 
 use crate::{
-    constants::{MASTER_WALLET, USDC_MINT, USER_INFO_SEED},
+    constants::{INSIGHT_MINT, MASTER_WALLET, USER_INFO_SEED},
     error::ErrorCode,
     UserInfo,
 };
@@ -57,7 +57,7 @@ pub fn pay_per_hour_and_unfreeze_balance(
 ) -> Result<()> {
     #[cfg(any(feature = "devnet", feature = "mainnet"))]
     {
-        if ctx.accounts.token.key() != USDC_MINT {
+        if ctx.accounts.token.key() != INSIGHT_MINT {
             return Err(ErrorCode::InvalidToken.into());
         }
     }
