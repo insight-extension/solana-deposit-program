@@ -5,13 +5,13 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-deposit_program = "Bf4qyNgbkoSUsxAQakj9iqp7GApdnT6qJWLikDzK9Rqn"
+deposit_program = "EkUjnEsQygT5KJizKHEGPyjP2amfRQutMuA8pTea8TQq"
 
 [programs.localnet]
-deposit_program = "Bf4qyNgbkoSUsxAQakj9iqp7GApdnT6qJWLikDzK9Rqn"
+deposit_program = "EkUjnEsQygT5KJizKHEGPyjP2amfRQutMuA8pTea8TQq"
 
 [programs.mainnet]
-deposit_program = "Bf4qyNgbkoSUsxAQakj9iqp7GApdnT6qJWLikDzK9Rqn"
+deposit_program = "EkUjnEsQygT5KJizKHEGPyjP2amfRQutMuA8pTea8TQq"
 
 [registry]
 url = "https://api.apr.dev"

@@ -8,7 +8,7 @@ pub use instructions::*;
 pub use reusable::*;
 pub use state::*;
 
-declare_id!("Bf4qyNgbkoSUsxAQakj9iqp7GApdnT6qJWLikDzK9Rqn");
+declare_id!("EkUjnEsQygT5KJizKHEGPyjP2amfRQutMuA8pTea8TQq");
 
 #[program]
 pub mod deposit_program {
@@ -45,6 +45,10 @@ pub mod deposit_program {
             amount,
             per_hour_left,
         )
+    }
+
+    pub fn subscribe(ctx: Context<Subscribe>, amount: u64, duration: i64) -> Result<()> {
+        instructions::subscribe::subscribe(ctx, amount, duration)
     }
 
     pub fn refund(ctx: Context<Refund>, amount: u64) -> Result<()> {
