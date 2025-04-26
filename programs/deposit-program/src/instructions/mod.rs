@@ -4,6 +4,9 @@ pub use pay_per_minute_and_unfreeze_balance::*;
 pub mod pay_per_hour_and_unfreeze_balance;
 pub use pay_per_hour_and_unfreeze_balance::*;
 
+pub mod subscribe;
+pub use subscribe::*;
+
 pub mod deposit;
 pub use deposit::*;
 
